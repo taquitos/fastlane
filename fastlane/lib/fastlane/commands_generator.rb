@@ -119,8 +119,21 @@ module Fastlane
             beta_info = CrashlyticsBetaCommandLineHandler.info_from_options(options)
             Fastlane::CrashlyticsBeta.new(beta_info, Fastlane::CrashlyticsBetaUi.new).run
           else
-            Fastlane::Setup.new.run(user: options.user)
+            is_swift_fastfile = args.include?("swift")
+            Fastlane::Setup.new.run(user: options.user, is_swift_fastfile: is_swift_fastfile)
+            Fastlane::SwiftLaneManager.first_time_setup
           end
+        end
+      end
+
+      command :init_swift do |c|
+        c.syntax = 'fastlane init_swift'
+        c.description = 'Helps you with your initial fastlane setup for Swift'
+        c.option '-u STRING', '--user STRING', String, 'iOS projects only: Your Apple ID'
+
+        c.action do |args, options|
+          Fastlane::Setup.new.run(user: options.user, is_swift_fastfile: true)
+          Fastlane::SwiftLaneManager.first_time_setup
         end
       end
 
@@ -132,6 +145,19 @@ module Fastlane
 
         c.action do |args, options|
           Fastlane::NewAction.run(new_action_name: options.name)
+        end
+      end
+
+      command :socket_server do |c|
+        c.syntax = 'fastlane start_server'
+        c.description = 'Starts local socket server and enables only a single local connection'
+        c.action do |args, options|
+          require 'fastlane/server/socket_server'
+          require 'fastlane/server/socket_server_action_command_executor'
+          command_executor = SocketServerActionCommandExecutor.new
+          server = Fastlane::SocketServer.new(command_executor: command_executor)
+          result = server.start
+          UI.success "Result: #{result}" if result
         end
       end
 

@@ -90,6 +90,10 @@ module Fastlane
         "Integer representation of the latest build number uploaded to TestFlight"
       end
 
+      def self.return_type
+        :int
+      end
+
       def self.authors
         ["daveanderson"]
       end
